@@ -14,3 +14,63 @@ After setup:
 1. Install dependencies `yarn`
 1. Start locally: `yarn start`
 1. Have fun
+
+## Mappings
+
+```json
+{
+  "mappings": {
+    "properties": {
+      "deltaMovementInMm": {
+        "type": "float"
+      },
+      "readingDate": {
+        "type": "date"
+      },
+      "readingPlacement": {
+        "properties": {
+          "depthInMeter": {
+            "type": "float"
+          },
+          "x": {
+            "type": "long"
+          },
+          "y": {
+            "type": "long"
+          }
+        }
+      },
+      "sensor": {
+        "type": "nested",
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "placement": {
+            "properties": {
+              "depthInMeter": {
+                "type": "float"
+              },
+              "x": {
+                "type": "long"
+              },
+              "y": {
+                "type": "long"
+              }
+            }
+          }
+        }
+      },
+      "status": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      }
+    }
+  }
+}
+```

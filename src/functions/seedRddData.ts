@@ -2,16 +2,23 @@ import { app, InvocationContext, Timer } from "@azure/functions";
 import { SecretClient } from "@azure/keyvault-secrets";
 import { DefaultAzureCredential } from "@azure/identity";
 import { Client } from "@elastic/elasticsearch";
+import { seedData } from "../sensorSeeding";
+
+const INDEX_NAME = "sensor_readings";
 
 export async function seedRddData(
-  myTimer: Timer,
+  _myTimer: Timer,
   context: InvocationContext
 ): Promise<void> {
+  const thresholdLikelyhood = process.env.THRESHOLD_LIKELYHOOD as
+    | "high"
+    | "low"
+    | undefined;
+
   const vaultName = process.env["KeyVault_Name"];
   if (!vaultName) {
     throw new Error("KeyVault_Name is not set.");
   }
-
   const credential = new DefaultAzureCredential();
 
   const url = `https://${vaultName}.vault.azure.net/`;
@@ -42,10 +49,20 @@ export async function seedRddData(
   }
 
   context.info(`Connected to cluster ${resp.cluster_name}`);
+  context.info(
+    `Seeding with ${thresholdLikelyhood} likelyhood of breaking threshold.`
+  );
 
-  context.log(resp);
+  const datasource = seedData(thresholdLikelyhood ?? "low");
 
-  //   context.log("Secrets found.", secretUrl.value, secretApiKey.value);
+  const result = await elastic.helpers.bulk({
+    datasource,
+    onDocument: (doc) => ({ index: { _index: INDEX_NAME } }),
+  });
+
+  context.log(
+    `Indexed ${result.successful} documents. ${result.failed} failed.`
+  );
 }
 
 app.timer("seedRddData", {
