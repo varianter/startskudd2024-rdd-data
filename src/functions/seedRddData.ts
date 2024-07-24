@@ -55,6 +55,28 @@ export async function seedRddData(
 
   const datasource = seedData(thresholdLikelyhood ?? "low");
 
+  if (!(await elastic.indices.exists({ index: INDEX_NAME }))) {
+    // Index does not exist, create it with proper mappings
+    context.log(`Creating index ${INDEX_NAME}.`);
+
+    await elastic.indices.create({
+      index: INDEX_NAME,
+      body: {
+        mappings: {
+          properties: {
+            sensorId: { type: "keyword" },
+            sensor: {
+              type: "nested",
+              properties: {
+                id: { type: "keyword" },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   const result = await elastic.helpers.bulk({
     datasource,
     onDocument: (doc) => ({ index: { _index: INDEX_NAME } }),

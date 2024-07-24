@@ -1,4 +1,4 @@
-# Get all last 24h
+# Count number of readings over threshold over last 24h
 
 ```json
 POST /sensor_readings/_search
@@ -39,7 +39,7 @@ POST /sensor_readings/_search
 }
 ```
 
-# Aggragation of all sensors over threshold
+# All over threshold and see what sensors are above the threshold (with number of readings)
 
 ```json
 POST /sensor_readings/_search
@@ -98,45 +98,32 @@ POST /sensor_readings/_search
 }
 ```
 
-# Date histogram of one minute intervals (max)
+# Date histogram of one minute intervals (max reading)
 
 ```json
 POST /sensor_readings/_search
 {
+  "size": 0,
   "query": {
-    "bool": {
-      "must": [
-        {
-          "range": {
-            "readingDate": {
-              "gte": "now-10m"
-            }
-          }
-        },
-        {
-          "match": {
-            "status": "ON"
-          }
-        },
-        {
-          "range": {
-            "readingPlacement.depthInMeter": {
-              "gte": 1
-            }
-          }
-        }
-      ]
+    "range": {
+      "readingDate": {
+        "gte": "now-10m"
+      }
     }
   },
-  "size": 0,
   "aggs": {
-    "avg_movement_per_min": {
+    "max_movement_per_min": {
       "date_histogram": {
         "field": "readingDate",
-        "calendar_interval": "1m"
+        "fixed_interval": "1m",
+        "time_zone": "Europe/Oslo",
+        "extended_bounds": {
+          "min": "now-10m",
+          "max": "now"
+        }
       },
       "aggs": {
-        "sales": {
+        "max_reading": {
           "max": {
             "field": "deltaMovementInMm"
           }
@@ -149,39 +136,31 @@ POST /sensor_readings/_search
 
 ## Get all sensors
 
-```
+```json
 POST /sensor_readings/_search
 {
   "size": 0,
   "aggs": {
-    "sensorsOverThreshold": {
-      "nested": {
-        "path": "sensor"
+    "top_tags": {
+      "terms": {
+        "field": "sensorId",
+        "size": 100
       },
       "aggs": {
-        "by_district": {
-          "terms": {
-            "field": "sensor.id",
-            "size": 50
-          },
-          "aggs": {
-            "tops": {
-              "top_hits": {
-                "sort": [
-                  {
-                    "readingDate": {
-                      "order": "desc"
-                    }
-                  }
-                ],
-                "size": 1
+        "top_sales_hits": {
+          "top_hits": {
+            "sort": [
+              {
+                "readingDate": {
+                  "order": "desc"
+                }
               }
-            }
+            ],
+            "size": 1
           }
         }
       }
     }
   }
 }
-
 ```

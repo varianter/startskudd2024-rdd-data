@@ -8,6 +8,7 @@ type SensorMetadata = {
 };
 type SensorReading = {
   // Status can be OFF, ON, or ERROR
+  sensorId: string;
   status: "OFF" | "ON" | "ERROR";
   sensor: SensorMetadata;
   deltaMovementInMm?: number;
@@ -217,6 +218,7 @@ export function seedData(
     if (sensor.defaultStatus === "ON") {
       return {
         status: "ON",
+        sensorId: sensor.id,
         sensor: {
           id: sensor.id,
           placement: sensor.placement,
@@ -231,6 +233,7 @@ export function seedData(
     }
     return {
       status: sensor.defaultStatus,
+      sensorId: sensor.id,
       sensor: {
         id: sensor.id,
         placement: sensor.placement,
