@@ -88,7 +88,7 @@ export async function seedRddData(
 }
 
 app.timer("seedRddData", {
-  schedule: "*/20 * * * * *",
+  schedule: "*/5 * * * * *",
   handler: seedRddData,
   retry: {
     strategy: "fixedDelay",

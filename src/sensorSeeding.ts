@@ -243,8 +243,8 @@ export function seedData(
   });
 }
 
-const HIGH_PROBABILTY = 0.4;
-const NORMAL_PROBABILTY = 0.0005; // 0.05%
+const HIGH_PROBABILTY = 0.05;
+const NORMAL_PROBABILTY = 0.00005; // 0.05%
 /**
  * random movement in mm. The odds for movement of OVER 5 mm should be NORMAL_PROBABILTY%
  * if highLikelyhoodOfThreshold is true the odds should be HIGH_PROBABILTY%
